@@ -1,0 +1,16 @@
+# Shared, intended dependencies for the LangChain examples.
+# Text manifest only — install with: pip install -r requirements.txt
+
+# Core framework
+langchain
+
+# Model provider integrations (install the ones you need)
+langchain-openai
+langchain-anthropic
+
+# Community loaders, splitters and utilities
+langchain-community
+langchain-text-splitters
+
+# Environment / API key handling
+python-dotenv
