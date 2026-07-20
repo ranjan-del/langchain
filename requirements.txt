@@ -1,16 +1,21 @@
-# Shared, intended dependencies for the LangChain examples.
-# Text manifest only — install with: pip install -r requirements.txt
+# Dependencies for the LangChain examples.
+# Install with: pip install -r requirements.txt
+#
+# The examples themselves are OFFLINE-FIRST and self-contained: they run on the
+# Python standard library alone, with no API key and no network. The only hard
+# requirement below is pytest, used to run the test suite (and by CI).
 
-# Core framework
-langchain
+# Test runner (required to run the suite).
+pytest
 
-# Model provider integrations (install the ones you need)
-langchain-openai
-langchain-anthropic
-
-# Community loaders, splitters and utilities
-langchain-community
-langchain-text-splitters
-
-# Environment / API key handling
-python-dotenv
+# ---------------------------------------------------------------------------
+# OPTIONAL: the real LangChain stack. The examples deliberately do NOT import
+# these so they stay runnable and testable with zero external dependencies.
+# Uncomment and install if you want to extend an example to call a hosted model.
+# ---------------------------------------------------------------------------
+# langchain
+# langchain-openai
+# langchain-anthropic
+# langchain-community
+# langchain-text-splitters
+# python-dotenv

@@ -4,6 +4,8 @@ A collection of small, **independent** LangChain examples. This repository is **
 
 The goal is to learn the core LangChain concepts through focused, self-contained scripts.
 
+**Offline-first.** Every example runs with no API key, no network call, and no third-party packages: each script ships a small, deterministic local implementation of the concept (including a fake/echo model where an LLM call would normally go). This keeps every folder runnable and testable out of the box. See the note under [Implementation approach](#implementation-approach).
+
 ## Architecture Diagram
 
 ```mermaid
@@ -85,17 +87,25 @@ cd langchain
 python -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
 
-# 3. Install the shared dependencies
+# 3. Install dependencies (only pytest is required; see requirements.txt)
 pip install -r requirements.txt
 
-# 4. Add your API keys
+# 4. (Optional) Add API keys. NOT needed to run anything here; every example
+#    runs offline. Only relevant if you extend an example to a hosted model.
 cp .env.example .env             # then edit .env
 # OPENAI_API_KEY=...
 # ANTHROPIC_API_KEY=...
 
-# 5. Run any example
+# 5. Run any example (no key required)
 python prompt-template/example.py
+
+# 6. Run the test suite
+pytest -q
 ```
+
+## Implementation approach
+
+These examples are written to be **runnable and testable with zero external dependencies**. Where a real LangChain program would call a hosted model, the example substitutes a deterministic local stand-in (for instance a fake/echo chat model, a hashing embedder, or a rule-based agent router). Each script keeps the same public shape as its LangChain counterpart (`PromptTemplate.format`, `chat_model.invoke`, `prompt | model | parser`, `Embeddings.embed`, and so on) so the concept transfers directly. This is a deliberate trade: reproducible, key-free, CI-friendly demonstrations of each building block rather than thin wrappers that only work with a paid API.
 
 ## Features
 
@@ -112,26 +122,43 @@ python prompt-template/example.py
 | Text Splitter | `text-splitter/` | Chunking long documents |
 | Embeddings | `embeddings/` | Generating vectors and comparing similarity |
 
+## Tests
+
+A pytest suite in `tests/` covers every example (at least one behavioural test per example, plus a check that each `main()` runs). All tests run offline.
+
+```bash
+pytest -q      # from the repo root
+```
+
+Continuous integration runs the same suite on every push and pull request via [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
+
 ## Screenshots
 
-_Coming soon_
+Not captured (headless build). The examples are console scripts; run any of them locally to see their output.
 
 ## Demo GIF
 
-_Coming soon_
+Not captured (headless build).
 
 ## API Documentation
 
 This repository contains standalone scripts and does not expose an HTTP API.
 
-_Coming soon_
+## Status
+
+| Item | Status |
+| --- | --- |
+| 10 example scripts implemented and runnable | Done |
+| Offline-first (no API key required) | Done |
+| `.env.example` template | Done |
+| pytest suite (per-example tests) | Done (23 tests passing) |
+| GitHub Actions CI | Done |
+| Screenshots / demo GIF | Not captured (headless build) |
 
 ## Future Improvements
 
-- Fill in each `example.py` with a minimal, runnable implementation.
-- Add a `.env.example` template for required API keys.
 - Add retrieval-augmented generation (RAG) and vector-store examples.
-- Add unit tests for each example.
+- Provide optional variants that call a hosted model when an API key is present.
 - Optional: provide a `docker compose up` path to run any example in a container.
 
 ## License

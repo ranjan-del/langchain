@@ -1,26 +1,28 @@
 # Output Parser
 
-Turn raw model output into structured Python objects (e.g. JSON, Pydantic).
+Turn raw model text into structured Python objects.
 
-This is a small, self-contained example. It is independent of the other folders in this repository and can be run on its own.
+This is a small, self-contained example. It is independent of the other folders in this repository and runs on its own with no API key and no external dependencies.
 
 ## What this demonstrates
 
-- Turn raw model output into structured Python objects (e.g. JSON, Pydantic).
-- See the `# TODO:` markers in `example.py` for the checklist items to implement.
+- A comma-separated list parser producing a `list`.
+- A `key: value` parser producing a `dict` with light type coercion.
+- Running both parsers on fixed sample text for a deterministic result.
 
 ## Prerequisites
 
 - Python 3.10+
-- Dependencies from the top-level `requirements.txt`
-- An `.env` file with your API keys (see the top-level README)
+- No API key required. The example runs fully offline using a deterministic local implementation.
+- Only the standard library is used at runtime; `pytest` (from the top-level `requirements.txt`) is needed to run the tests.
 
 ## How to run
 
 ```bash
-# From the repository root, create and activate a virtual environment first
-# (see the top-level README), install requirements, then:
+# From the repository root:
 python output-parser/example.py
 ```
 
-_Status: scaffold only. The example logic is not yet implemented._
+## Notes
+
+Where a production LangChain program would call a hosted model, this example uses a deterministic local stand-in so the result is reproducible and key-free. See the top-level README section "Implementation approach" for details.
