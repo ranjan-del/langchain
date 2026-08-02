@@ -9,6 +9,15 @@ This is a small, self-contained example. It is independent of the other folders 
 - A character splitter with `chunk_size` and `chunk_overlap` settings.
 - Sliding an overlapping window across the text and tracking each chunk's span.
 - Validation that overlap must be smaller than chunk size.
+- A `RecursiveCharacterTextSplitter` (LangChain's default) that tries separators
+  from coarsest to finest (paragraph, newline, sentence, space, character) and
+  only hard-cuts as a last resort.
+- Why the recursive one is preferred: run the example and compare. The blind
+  window ends chunk 1 at `"Overlap keeps context f"`, mid-word. The recursive
+  splitter ends its chunks at sentence boundaries, which embeds better and reads
+  better when a chunk is shown to a user as a citation.
+- `chunk_size` treated as a hard bound: the carried-over overlap is dropped
+  rather than allowed to push a chunk past the limit.
 
 ## Prerequisites
 

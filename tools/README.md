@@ -8,6 +8,11 @@ This is a small, self-contained example. It is independent of the other folders 
 
 - A `@tool` decorator that captures a name, description and argument schema.
 - Inspecting a tool's metadata (name, args, description).
+- `Tool.args_schema`, a JSON Schema derived from the function's own type hints so
+  it cannot drift from the implementation. This is the contract actually sent to
+  the model provider, and parameters with defaults are correctly optional.
+- `ToolInvocationError` on missing or unknown arguments, because a model calling
+  a tool wrongly is an expected event an agent loop should catch, not a crash.
 - Invoking tools directly with keyword arguments.
 
 ## Prerequisites

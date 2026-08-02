@@ -9,6 +9,13 @@ This is a small, self-contained example. It is independent of the other folders 
 - A `ConversationBufferMemory` that records every user and AI turn.
 - Replaying the buffered transcript on each turn.
 - A model recalling a fact stated earlier, entirely offline.
+- Three competing strategies run against the identical 4-turn script:
+  `ConversationBufferMemory` (keep everything), `ConversationBufferWindowMemory`
+  (keep the last k turns) and `ConversationSummaryMemory` (a lossy summary plus
+  the last k turns).
+- The trade-off made concrete: only the full buffer still answers "what is my
+  name?" correctly. The window dropped the introduction and the summary did not
+  preserve it. Bounding the prompt size costs you recall.
 
 ## Prerequisites
 

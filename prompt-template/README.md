@@ -8,7 +8,11 @@ This is a small, self-contained example. It is independent of the other folders 
 
 - Declaring a template with named placeholders and listing its input variables.
 - Filling a template with `.format(**kwargs)`, including multi-variable prompts.
+- Failing loudly with `KeyError` when a required variable is not supplied.
 - Partial application: binding some variables now and the rest later.
+- `ChatPromptTemplate.from_messages`, which renders a whole role-tagged
+  conversation from one shared variable dict (a variable used in both the system
+  and the human message is only supplied once).
 
 ## Prerequisites
 

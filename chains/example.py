@@ -30,6 +30,15 @@ class Runnable:
         """Run this step on ``value``."""
         return self.func(value)
 
+    def batch(self, values: list[Any]) -> list[Any]:
+        """Run this step over many inputs.
+
+        Every LCEL runnable exposes ``batch`` alongside ``invoke`` so a whole
+        chain can be applied to a list without the caller rebuilding it each
+        time. Inputs are independent, so order in equals order out.
+        """
+        return [self.invoke(value) for value in values]
+
     def __or__(self, other: "Runnable") -> "Runnable":
         """Compose two steps: ``(self | other).invoke(x) == other(self(x))``."""
 
@@ -68,10 +77,38 @@ def parser_step() -> Runnable:
     return Runnable(parse, name="parser")
 
 
+def parallel_step(branches: dict[str, Runnable]) -> Runnable:
+    """Fan one input out to several named branches and collect a dict.
+
+    This mirrors LangChain's ``RunnableParallel``. It matters because a chain is
+    often not a straight line: you want the same input scored, summarised and
+    classified, then merged into one structured payload for the next step.
+    """
+
+    def run_all(value: Any) -> dict[str, Any]:
+        return {name: branch.invoke(value) for name, branch in branches.items()}
+
+    return Runnable(run_all, name="parallel(" + ",".join(branches) + ")")
+
+
 def build_chain() -> Runnable:
     """Compose prompt | model | parser into one runnable chain."""
     template = "Write a tagline about {topic} for {audience}."
     return prompt_step(template) | model_step() | parser_step()
+
+
+def build_parallel_chain() -> Runnable:
+    """Build ``prompt | model | {parsed, raw_length}``.
+
+    The final stage runs two branches over the same model output, showing that
+    composition is a graph, not only a straight pipe.
+    """
+    branches = {
+        "parsed": parser_step(),
+        "raw_length": Runnable(len, name="length"),
+    }
+    template = "Write a tagline about {topic} for {audience}."
+    return prompt_step(template) | model_step() | parallel_step(branches)
 
 
 def main() -> None:
@@ -83,6 +120,20 @@ def main() -> None:
     print(f"  chain steps : {chain.name}")
     print(f"  input       : {variables}")
     print(f"  result      : {result}")
+
+    # The same chain applied to a list of inputs in one call.
+    batch_inputs = [
+        {"topic": "vector search", "audience": "students"},
+        {"topic": "chunking", "audience": "librarians"},
+    ]
+    print("\n  batch:")
+    for source, output in zip(batch_inputs, chain.batch(batch_inputs)):
+        print(f"    {source['topic']:<14} -> {output}")
+
+    # Fan-out: one model output consumed by two branches at once.
+    parallel = build_parallel_chain()
+    print(f"\n  parallel steps : {parallel.name}")
+    print(f"  parallel result: {parallel.invoke(variables)}")
 
 
 if __name__ == "__main__":

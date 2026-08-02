@@ -8,7 +8,13 @@ This is a small, self-contained example. It is independent of the other folders 
 
 - A comma-separated list parser producing a `list`.
 - A `key: value` parser producing a `dict` with light type coercion.
-- Running both parsers on fixed sample text for a deterministic result.
+- A `JsonOutputParser` that strips the ```` ```json ```` fence models habitually
+  wrap their output in before calling `json.loads`.
+- `get_format_instructions()` on every parser: the parser also tells the model
+  what shape to answer in, and that text is pasted into the prompt.
+- `OutputParserException` for unparseable or wrongly shaped output, so a caller
+  can retry instead of receiving a silently wrong value.
+- Running all three parsers on fixed sample text for a deterministic result.
 
 ## Prerequisites
 

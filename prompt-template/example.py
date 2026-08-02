@@ -6,8 +6,9 @@ re-typing boilerplate.
 
 This runs with no API key and no external dependencies. It mirrors the behaviour
 of ``langchain_core.prompts.PromptTemplate`` (``{variable}`` substitution and
-``.format(**kwargs)``) using only the standard library, so the concept is clear
-and the output is deterministic.
+``.format(**kwargs)``) and ``ChatPromptTemplate`` (the same substitution applied
+across a list of role-tagged messages) using only the standard library, so the
+concept is clear and the output is deterministic.
 """
 
 from __future__ import annotations
@@ -50,6 +51,46 @@ class PromptTemplate:
         return PromptTemplate(filled)
 
 
+@dataclass
+class ChatPromptTemplate:
+    """A list of role-tagged message templates rendered as one conversation.
+
+    Chat models do not take a single string, they take a list of ``(role, text)``
+    messages. ``ChatPromptTemplate`` therefore wraps several
+    :class:`PromptTemplate` instances (one per message) and fills them all from
+    the same variable dict. This is why LangChain ships a separate chat prompt
+    class rather than reusing the plain string template.
+
+    Attributes:
+        messages: ordered ``(role, PromptTemplate)`` pairs.
+    """
+
+    messages: list[tuple[str, PromptTemplate]]
+
+    @classmethod
+    def from_messages(cls, messages: list[tuple[str, str]]) -> "ChatPromptTemplate":
+        """Build from raw ``(role, template_string)`` pairs, as LangChain does."""
+        return cls([(role, PromptTemplate(text)) for role, text in messages])
+
+    @property
+    def input_variables(self) -> list[str]:
+        """Union of every message's placeholders, in first-seen order."""
+        seen: list[str] = []
+        for _role, template in self.messages:
+            for name in template.input_variables:
+                if name not in seen:
+                    seen.append(name)
+        return seen
+
+    def format_messages(self, **kwargs: str) -> list[tuple[str, str]]:
+        """Render every message, returning ``(role, text)`` pairs.
+
+        Each message is formatted with the *same* kwargs, so a variable used in
+        both the system and the human message only has to be supplied once.
+        """
+        return [(role, template.format(**kwargs)) for role, template in self.messages]
+
+
 def build_examples() -> list[tuple[str, str]]:
     """Return a list of (description, rendered_prompt) demonstrations."""
     translate = PromptTemplate("Translate '{text}' into {language}.")
@@ -83,12 +124,29 @@ def build_examples() -> list[tuple[str, str]]:
     return results
 
 
+def build_chat_prompt() -> ChatPromptTemplate:
+    """Return a two-message chat prompt sharing one variable across messages."""
+    return ChatPromptTemplate.from_messages(
+        [
+            ("system", "You are a {role} who answers in {style} sentences."),
+            ("human", "Explain {topic} to me."),
+        ]
+    )
+
+
 def main() -> None:
     """Entry point: render a few prompts from templates and print them."""
     print("[prompt-template] rendering reusable prompts\n")
     for description, rendered in build_examples():
         print(f"- {description}:")
         print(f"    {rendered}\n")
+
+    chat_prompt = build_chat_prompt()
+    print(f"- chat prompt (variables: {chat_prompt.input_variables}):")
+    for role, text in chat_prompt.format_messages(
+        role="tutor", style="short", topic="prompt templates"
+    ):
+        print(f"    {role:>6}: {text}")
 
 
 if __name__ == "__main__":

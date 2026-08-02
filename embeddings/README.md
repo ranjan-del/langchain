@@ -9,6 +9,13 @@ This is a small, self-contained example. It is independent of the other folders 
 - A deterministic, offline hashing embedder producing L2-normalized vectors.
 - Cosine similarity between a query and candidate documents.
 - Ranking documents and selecting the most similar one.
+- An `InMemoryVectorStore` with `add_texts` and `similarity_search(query, k)`,
+  which embeds each document once at insert time and then scores many queries
+  against the stored vectors. Re-embedding the corpus per query is the expensive
+  part, and avoiding it is the entire reason vector stores exist.
+- The honest limit of the approach: the hashing embedder matches shared words,
+  not meaning, so the paraphrase about kittens and puppies scores lower (0.405)
+  than the literal match (0.676).
 
 ## Prerequisites
 

@@ -8,6 +8,11 @@ This is a small, self-contained example. It is independent of the other folders 
 
 - A `Document` record holding `page_content` and `metadata`.
 - A text loader and a directory loader over `.txt` files.
+- A `CSVLoader` producing one document per row, with the row number in metadata
+  rather than in the text so retrieval can cite a source without polluting the
+  embedded content.
+- The part that actually varies between loaders: not the reading, but deciding
+  what counts as one document and what gets promoted to metadata.
 - Writing sample files to a temp dir and loading them, fully offline.
 
 ## Prerequisites

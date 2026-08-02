@@ -9,6 +9,13 @@ This is a small, self-contained example. It is independent of the other folders 
 - A registry of tools (calculator, length, reverse).
 - A rule-based router that selects a tool for a query (offline stand-in for LLM reasoning).
 - Executing the chosen tool and returning a trace of the decision.
+- `route` returning `None` when nothing matches, so the agent says "no tool
+  matched" instead of silently answering every unrecognised question.
+- Explicit intent words winning over the arithmetic pattern, so `reverse '3+4'`
+  is not hijacked by the calculator.
+- `run_agent_loop`, a multi-step scratchpad loop where each observation becomes
+  the input to the next tool, bounded by `max_steps`. This iterative decide,
+  act, observe cycle is what separates an agent from a fixed chain.
 
 ## Prerequisites
 

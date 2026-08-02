@@ -15,6 +15,7 @@ model behind the same call.
 from __future__ import annotations
 
 import os
+from collections.abc import Iterator
 from dataclasses import dataclass
 
 
@@ -34,6 +35,15 @@ def system(text: str) -> Message:
 def human(text: str) -> Message:
     """Build a human (user) message."""
     return Message("human", text)
+
+
+def ai(text: str) -> Message:
+    """Build an AI (assistant) message.
+
+    Prior assistant turns are fed back in as ``ai`` messages, which is how a
+    multi-turn conversation is represented to a stateless chat model.
+    """
+    return Message("ai", text)
 
 
 class FakeChatModel:
@@ -56,6 +66,28 @@ class FakeChatModel:
         prefix = f"[{persona}] " if persona else ""
         reply = f"{prefix}You said: '{last_human}'. Here is a helpful reply."
         return Message("ai", reply)
+
+    def stream(self, messages: list[Message]) -> Iterator[str]:
+        """Yield the reply one token at a time.
+
+        Real providers stream partial tokens over the network so a UI can render
+        text as it arrives. The offline model has the whole answer up front, so
+        it simply chops it into word-sized tokens. What matters for the concept
+        is the shape: ``stream`` yields fragments whose concatenation equals the
+        content that ``invoke`` would have returned in one go.
+        """
+        content = self.invoke(messages).content
+        for index, word in enumerate(content.split(" ")):
+            yield word if index == 0 else f" {word}"
+
+    def batch(self, conversations: list[list[Message]]) -> list[Message]:
+        """Answer several independent conversations in one call.
+
+        Batching exists because per-request overhead dominates when you have
+        many small prompts. The conversations stay isolated: nothing from one
+        leaks into another.
+        """
+        return [self.invoke(conversation) for conversation in conversations]
 
 
 def get_chat_model() -> FakeChatModel:
@@ -82,6 +114,23 @@ def main() -> None:
         print(f"  {msg.role:>6}: {msg.content}")
     response = model.invoke(conversation)
     print(f"  {response.role:>6}: {response.content}")
+
+    # Streaming: same answer, delivered token by token.
+    print("\n  streamed tokens:")
+    tokens = list(model.stream(conversation))
+    print(f"    {len(tokens)} token(s) -> {tokens[:4]} ...")
+    print(f"    reassembled == invoke(): {''.join(tokens) == response.content}")
+
+    # Batching: two unrelated conversations answered in one call.
+    replies = model.batch(
+        [
+            [human("What is streaming?")],
+            [system("pirate"), human("What is batching?")],
+        ]
+    )
+    print("\n  batched replies:")
+    for reply in replies:
+        print(f"    {reply.content}")
 
 
 if __name__ == "__main__":

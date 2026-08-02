@@ -6,8 +6,11 @@ This is a small, self-contained example. It is independent of the other folders 
 
 ## What this demonstrates
 
-- Building a conversation from system and human messages.
+- Building a conversation from `system`, `human` and `ai` messages.
 - Calling `model.invoke(messages)` and reading the returned AI message.
+- `model.stream(messages)`, yielding tokens whose concatenation equals what
+  `invoke` would have returned in one go.
+- `model.batch(conversations)`, answering several isolated conversations at once.
 - A deterministic offline 'echo' model so it runs with no API key.
 
 ## Prerequisites

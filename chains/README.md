@@ -8,6 +8,10 @@ This is a small, self-contained example. It is independent of the other folders 
 
 - A tiny `Runnable` that supports LCEL-style `a | b` composition.
 - Wiring `prompt | model | parser` and invoking it end to end.
+- `Runnable.batch`, applying the whole composed chain to a list of inputs.
+- `parallel_step`, a `RunnableParallel` equivalent that fans one input out to
+  several named branches and merges the results into a dict, showing that a
+  chain is a graph rather than only a straight pipe.
 - A deterministic offline model step so the chain runs with no API key.
 
 ## Prerequisites
